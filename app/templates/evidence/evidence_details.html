@@ -1,0 +1,100 @@
+{% extends "shell.html" %}
+{% from 'partials/badge.html' import badge %}
+{% block title %}{{ ev.name }}{% endblock %}
+{% block page_title %}Evidence Details{% endblock %}
+{% block page_subtitle %}{{ ev.evidence_id }}{% endblock %}
+{% set active = 'view_evidence' %}
+
+{% block content %}
+<div class="page-head row between wrap">
+  <div>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('evidence.view_evidence') }}" style="margin-bottom:14px">← Back to evidence</a>
+    <h1>{{ ev.name }}</h1>
+    <p class="muted">{{ ev.evidence_id }} {% if case %}· <a href="{{ url_for('cases.case_details', case_id=case.case_id) }}" style="color:var(--accent)">{{ case.case_id }}</a>{% endif %}</p>
+  </div>
+  <div class="row gap-sm">
+    {% if ev.filepath %}
+    <a class="btn btn-ghost" href="{{ url_for('evidence.download_evidence', ev_id=ev.evidence_id) }}">
+      Download
+    </a>
+    {% endif %}
+    <a class="btn btn-ghost" href="{{ url_for('evidence.verify_hash') }}?ev_id={{ ev.evidence_id }}">Verify Hash</a>
+    <a class="btn btn-primary" href="{{ url_for('reports.evidence_report', ev_id=ev.evidence_id) }}">Evidence Report</a>
+  </div>
+</div>
+
+<div class="grid cols-2" style="grid-template-columns:1.6fr 1fr">
+  <div class="card pad">
+    <h3 style="margin-top:0">Evidence Information</h3>
+    <table class="data" style="margin-top:8px">
+      <tr><td class="muted text-sm" style="width:160px">Status</td><td>{{ badge(ev.status) }}</td></tr>
+      <tr><td class="muted text-sm">Type</td><td class="text-sm">{{ ev.type }}</td></tr>
+      <tr><td class="muted text-sm">Case</td><td class="mono text-sm">{{ ev.case_id }}</td></tr>
+      <tr><td class="muted text-sm">Storage Location</td><td class="text-sm">{{ ev.location }}</td></tr>
+      <tr><td class="muted text-sm">File Size</td><td class="text-sm">{{ ev.file_size or '—' }}</td></tr>
+      <tr><td class="muted text-sm">Collected By</td><td class="text-sm">{{ ev.collected_by }}</td></tr>
+      <tr><td class="muted text-sm">Collected At</td><td class="text-sm">{{ ev.collected_at.strftime('%B %d, %Y %H:%M') if ev.collected_at else '—' }}</td></tr>
+      {% if ev.integrity_verified_at %}
+      <tr><td class="muted text-sm">Last Verified</td><td class="text-sm">{{ ev.integrity_verified_at.strftime('%B %d, %Y') }}</td></tr>
+      {% endif %}
+    </table>
+    {% if ev.notes %}
+    <div style="margin-top:16px">
+      <div class="muted text-sm" style="margin-bottom:4px">Collection Notes</div>
+      <p class="text-sm">{{ ev.notes }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card pad">
+    <h3 style="margin-top:0">SHA-256 Hash</h3>
+    <div class="hashbox" style="margin-top:8px;word-break:break-all;font-size:0.75rem">{{ ev.hash }}</div>
+    <div style="margin-top:16px">
+      <h3>Transfer Evidence</h3>
+      <form method="POST" action="{{ url_for('evidence.transfer_evidence', ev_id=ev.evidence_id) }}" style="margin-top:8px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label for="to_party">Transfer to</label>
+          <input class="input" id="to_party" name="to_party" placeholder="e.g. Forensic Lab" required />
+        </div>
+        <div class="field">
+          <label for="reason">Reason</label>
+          <input class="input" id="reason" name="reason" placeholder="e.g. Forensic analysis" />
+        </div>
+        <div class="field">
+          <label for="location">New location</label>
+          <input class="input" id="location" name="location" value="{{ ev.location }}" />
+        </div>
+        <button class="btn btn-ghost btn-block" type="submit">Transfer</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:18px">
+  <div class="card-head">
+    <h3>Chain of Custody ({{ custody|length }})</h3>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('reports.custody_report') }}?ev_id={{ ev.evidence_id }}">Custody Report</a>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Timestamp</th><th>Action</th><th>From → To</th><th>Handler</th><th>Reason</th><th>Integrity</th></tr></thead>
+      <tbody>
+        {% for c in custody %}
+        <tr>
+          <td class="muted text-sm nowrap">{{ c.timestamp.strftime('%b %d, %Y %H:%M') if c.timestamp else '—' }}</td>
+          <td>{{ badge(c.action if c.action in ['Verified','Compromised'] else c.action) }}
+            <span class="badge sky"><span class="dot"></span>{{ c.action }}</span></td>
+          <td class="text-sm">{{ c.from_party }} <span class="faint">→</span> {{ c.to_party }}</td>
+          <td class="text-sm">{{ c.handler }}</td>
+          <td class="muted text-sm">{{ c.reason or '—' }}</td>
+          <td>{{ badge(c.integrity or 'Verified') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6"><div class="empty">No custody records yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Sign In{% endblock %}
+{% block body %}
+<div class="auth-wrap">
+  <section class="auth-brandside">
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+      <span class="name">EvidenceChain<small>Custody Management</small></span>
+    </div>
+    <div class="tagline">
+      <h1>Secure, verifiable evidence from seizure to courtroom.</h1>
+      <p class="muted">Track every transfer, verify integrity with cryptographic hashes, and maintain a tamper-evident chain of custody across your investigations.</p>
+      <ul class="feature-list">
+        <li>
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11a2 2 0 0 0-2 2c0 1.6-.2 3.2-.7 4.7"/><path d="M5.3 8.5A7 7 0 0 1 19 13c0 1.4-.1 2.7-.4 4"/></svg></span>
+          <div><div class="cell-strong">SHA-256 integrity</div><div class="muted text-sm">Hash every item on intake and verify on demand.</div></div>
+        </li>
+        <li>
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7"/></svg></span>
+          <div><div class="cell-strong">Unbroken custody chain</div><div class="muted text-sm">Every handoff is timestamped and logged.</div></div>
+        </li>
+        <li>
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></span>
+          <div><div class="cell-strong">Full audit trail</div><div class="muted text-sm">Court-ready logs of every action taken.</div></div>
+        </li>
+      </ul>
+    </div>
+    <p class="faint text-sm">Authorized personnel only · All activity is monitored and logged.</p>
+  </section>
+
+  <section class="auth-formside">
+    <div class="auth-card">
+      <h2>Welcome back</h2>
+      <p class="muted" style="margin-top:0">Sign in to your investigator account.</p>
+      <form method="POST" action="{{ url_for('auth.login') }}" style="margin-top:22px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label for="email">Email address</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+            <input class="input" id="email" name="email" type="email" placeholder="you@dem.gov" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input class="input" id="password" name="password" type="password" placeholder="••••••••" required />
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Sign in securely</button>
+      </form>
+      <p class="text-sm muted center" style="margin-top:18px">No account? <a href="{{ url_for('auth.register') }}" style="color:var(--accent);font-weight:600">Request access</a></p>
+      <div class="hr"></div>
+      <p class="text-xs faint center">Demo credentials — admin@dem.gov / admin123</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "shell.html" %}
+{% block title %}Create Case{% endblock %}
+{% block page_title %}Create Case{% endblock %}
+{% block page_subtitle %}New investigation{% endblock %}
+{% set active = 'create_case' %}
+
+{% block content %}
+<div class="page-head">
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('cases.view_cases') }}" style="margin-bottom:14px">← Back to cases</a>
+  <h1>Create Case</h1>
+  <p>Open a new case file. A unique case ID is generated automatically.</p>
+</div>
+
+<div class="grid cols-2" style="grid-template-columns:1.6fr 1fr">
+  <div class="card pad">
+    <form method="POST" action="{{ url_for('cases.create_case') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="field">
+        <label for="title">Case title</label>
+        <input class="input" id="title" name="title" placeholder="e.g. Riverside Warehouse Breach" required />
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="type">Case type</label>
+          <select class="select" id="type" name="type">
+            {% for t in ['Cyber Intrusion','Fraud','Theft','Contraband','Homicide','Other'] %}
+            <option>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="priority">Priority</label>
+          <select class="select" id="priority" name="priority">
+            {% for p in ['Critical','High','Medium','Low'] %}
+            <option {% if p == 'Medium' %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="lead">Lead investigator</label>
+          <select class="select" id="lead" name="lead">
+            {% for u in users %}
+            <option value="{{ u.name }}" {% if u.name == current_user.name %}selected{% endif %}>{{ u.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="location">Location / jurisdiction</label>
+          <input class="input" id="location" name="location" placeholder="e.g. Riverside Industrial Park" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea class="textarea" id="description" name="description" placeholder="Summary of the incident and scope of investigation..."></textarea>
+      </div>
+      <div class="row gap-sm">
+        <button class="btn btn-primary" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+          Create Case
+        </button>
+        <a class="btn btn-ghost" href="{{ url_for('cases.view_cases') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card pad">
+    <h3 style="margin-top:0">Before you start</h3>
+    <ul class="feature-list" style="margin-top:8px">
+      <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><div class="text-sm">Each case gets a tamper-evident ID and audit entry on creation.</div></li>
+      <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span><div class="text-sm">Add evidence items after the case is created.</div></li>
+      <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><div class="text-sm">Assign a lead investigator accountable for the case.</div></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

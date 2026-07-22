@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block body %}
+<div class="auth-wrap">
+  <section class="auth-brandside">
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+      <span class="name">EvidenceChain<small>Custody Management</small></span>
+    </div>
+    <div class="tagline">
+      <h1>Join the EvidenceChain platform.</h1>
+      <p class="muted">Create your authorized investigator account. All registrations are logged for security compliance.</p>
+    </div>
+    <p class="faint text-sm">Authorized personnel only · All activity is monitored and logged.</p>
+  </section>
+
+  <section class="auth-formside">
+    <div class="auth-card">
+      <h2>Request Access</h2>
+      <p class="muted" style="margin-top:0">Create your investigator account.</p>
+      <form method="POST" action="{{ url_for('auth.register') }}" style="margin-top:22px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label for="name">Full name</label>
+          <input class="input" id="name" name="name" type="text" placeholder="e.g. Sarah Mitchell" required />
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="email">Email address</label>
+            <input class="input" id="email" name="email" type="email" placeholder="you@dem.gov" required />
+          </div>
+          <div class="field">
+            <label for="badge">Badge number</label>
+            <input class="input" id="badge" name="badge" type="text" placeholder="DET-1042" />
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="role">Role</label>
+            <select class="select" id="role" name="role">
+              {% for r in roles %}
+              <option value="{{ r }}">{{ r }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input class="input" id="password" name="password" type="password" placeholder="Min 6 characters" required minlength="6" />
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+      </form>
+      <p class="text-sm muted center" style="margin-top:18px">Already have an account? <a href="{{ url_for('auth.login') }}" style="color:var(--accent);font-weight:600">Sign in</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

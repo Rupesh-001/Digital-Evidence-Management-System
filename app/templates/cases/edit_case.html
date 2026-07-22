@@ -1,0 +1,84 @@
+{% extends "shell.html" %}
+{% block title %}Edit Case{% endblock %}
+{% block page_title %}Edit Case{% endblock %}
+{% block page_subtitle %}{{ case.case_id }}{% endblock %}
+{% set active = 'view_cases' %}
+
+{% block content %}
+<div class="page-head">
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('cases.case_details', case_id=case.case_id) }}" style="margin-bottom:14px">← Back to case</a>
+  <h1>Edit Case</h1>
+  <p>Update case details for {{ case.case_id }}.</p>
+</div>
+
+<div class="grid cols-2" style="grid-template-columns:1.6fr 1fr">
+  <div class="card pad">
+    <form method="POST" action="{{ url_for('cases.edit_case', case_id=case.case_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="field">
+        <label for="title">Case title</label>
+        <input class="input" id="title" name="title" value="{{ case.title }}" required />
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="type">Case type</label>
+          <select class="select" id="type" name="type">
+            {% for t in ['Cyber Intrusion','Fraud','Theft','Contraband','Homicide','Other'] %}
+            <option {% if case.type == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select class="select" id="status" name="status">
+            {% for s in ['Open','Under Review','Closed','Archived'] %}
+            <option {% if case.status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="priority">Priority</label>
+          <select class="select" id="priority" name="priority">
+            {% for p in ['Critical','High','Medium','Low'] %}
+            <option {% if case.priority == p %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="lead">Lead investigator</label>
+          <select class="select" id="lead" name="lead">
+            {% for u in users %}
+            <option value="{{ u.name }}" {% if case.lead == u.name %}selected{% endif %}>{{ u.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="location">Location / jurisdiction</label>
+        <input class="input" id="location" name="location" value="{{ case.location or '' }}" />
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea class="textarea" id="description" name="description">{{ case.description or '' }}</textarea>
+      </div>
+      <div class="row gap-sm">
+        <button class="btn btn-primary" type="submit">Save Changes</button>
+        <a class="btn btn-ghost" href="{{ url_for('cases.case_details', case_id=case.case_id) }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card pad">
+    <h3 style="margin-top:0">Case Info</h3>
+    <table class="data" style="margin-top:8px">
+      <tr><td class="muted text-sm">Case ID</td><td class="mono text-sm">{{ case.case_id }}</td></tr>
+      <tr><td class="muted text-sm">Created</td><td class="text-sm">{{ case.created.strftime('%B %d, %Y') if case.created else '—' }}</td></tr>
+    </table>
+    <div style="margin-top:16px">
+      <p class="text-sm muted">All changes are logged in the audit trail.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

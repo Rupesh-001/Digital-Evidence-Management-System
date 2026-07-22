@@ -1,0 +1,125 @@
+{% extends "shell.html" %}
+{% block title %}Upload Evidence{% endblock %}
+{% block page_title %}Upload Evidence{% endblock %}
+{% block page_subtitle %}New intake{% endblock %}
+{% set active = 'upload_evidence' %}
+
+{% block content %}
+<div class="page-head">
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('evidence.view_evidence') }}" style="margin-bottom:14px">← Back to evidence</a>
+  <h1>Upload Evidence</h1>
+  <p>Catalogue a new evidence item. SHA-256 hash is computed automatically on upload.</p>
+</div>
+
+<div class="grid cols-2" style="grid-template-columns:1.6fr 1fr">
+  <div class="card pad">
+    <form method="POST" action="{{ url_for('evidence.upload_evidence') }}" enctype="multipart/form-data" id="evForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+      <div class="field">
+        <label>Evidence file</label>
+        <div class="drop-zone" id="drop" onclick="document.getElementById('file').click()">
+          <div id="dropText">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div>Drop file here or <span style="color:var(--accent)">browse</span></div>
+            <div class="faint text-xs" style="margin-top:4px">Images, videos, documents up to 500 MB</div>
+          </div>
+          <input type="file" id="file" name="file" style="display:none" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Computed SHA-256 hash</label>
+        <div class="hashbox" id="hashOut">Awaiting file…</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="name">Evidence name</label>
+          <input class="input" id="name" name="name" placeholder="e.g. Seized Laptop" required />
+        </div>
+        <div class="field">
+          <label for="type">Type</label>
+          <select class="select" id="type" name="type">
+            {% for t in ['Digital Device','Storage Media','Document','Video','Image','Audio','Physical Item'] %}
+            <option>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="case_id">Linked case</label>
+          <select class="select" id="case_id" name="case_id" required>
+            <option value="">— Select case —</option>
+            {% for c in cases %}
+            <option value="{{ c.case_id }}" {% if preselect == c.case_id %}selected{% endif %}>{{ c.case_id }} — {{ c.title[:35] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="location">Storage location</label>
+          <input class="input" id="location" name="location" placeholder="e.g. Evidence Locker A-12" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="notes">Collection notes</label>
+        <textarea class="textarea" id="notes" name="notes" placeholder="Where and how the item was collected..."></textarea>
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="submitBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+        Catalogue Evidence
+      </button>
+    </form>
+  </div>
+
+  <div class="card pad">
+    <h3 style="margin-top:0">Integrity workflow</h3>
+    <ul class="feature-list" style="margin-top:8px">
+      <li>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 11a2 2 0 0 0-2 2c0 1.6-.2 3.2-.7 4.7"/><path d="M8 14c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2-.3 4-.8 6"/></svg></span>
+        <div class="text-sm">A SHA-256 hash uniquely fingerprints the file contents.</div>
+      </li>
+      <li>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7"/></svg></span>
+        <div class="text-sm">A custody entry is logged automatically on intake.</div>
+      </li>
+      <li>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <div class="text-sm">Re-verify any time on the Verify Hash page.</div>
+      </li>
+    </ul>
+
+    <div style="margin-top:24px">
+      <h3>File size stats</h3>
+      <div id="fileMeta" class="muted text-sm">No file selected.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('file');
+  const hashOut = document.getElementById('hashOut');
+  const dropText = document.getElementById('dropText');
+  const fileMeta = document.getElementById('fileMeta');
+
+  ['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+  async function handleFile(file) {
+    hashOut.textContent = 'Computing SHA-256…';
+    dropText.innerHTML = '<div class="cell-strong">' + file.name + '</div><div class="text-sm faint">' + (file.size / 1024).toFixed(1) + ' KB</div>';
+    fileMeta.textContent = file.name + ' · ' + (file.size / (1024*1024)).toFixed(2) + ' MB · ' + file.type;
+    if (!document.getElementById('name').value) document.getElementById('name').value = file.name;
+    const buf = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+    const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    hashOut.textContent = hex;
+  }
+</script>
+{% endblock %}

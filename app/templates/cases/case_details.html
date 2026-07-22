@@ -1,0 +1,94 @@
+{% extends "shell.html" %}
+{% from 'partials/badge.html' import badge %}
+{% block title %}{{ case.title }}{% endblock %}
+{% block page_title %}Case Details{% endblock %}
+{% block page_subtitle %}{{ case.case_id }}{% endblock %}
+{% set active = 'view_cases' %}
+
+{% block content %}
+<div class="page-head row between wrap">
+  <div>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('cases.view_cases') }}" style="margin-bottom:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to cases
+    </a>
+    <h1>{{ case.title }}</h1>
+    <p class="muted">{{ case.case_id }}</p>
+  </div>
+  <div class="row gap-sm">
+    {% if current_user.can_manage_cases %}
+    <a class="btn btn-ghost" href="{{ url_for('cases.edit_case', case_id=case.case_id) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+      Edit
+    </a>
+    {% endif %}
+    {% if current_user.is_admin %}
+    <form method="POST" action="{{ url_for('cases.delete_case', case_id=case.case_id) }}" onsubmit="return confirm('Delete case {{ case.case_id }}? This cannot be undone.')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <button class="btn btn-ghost danger" type="submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Delete
+      </button>
+    </form>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ url_for('evidence.upload_evidence') }}?case_id={{ case.case_id }}">
+      + Add Evidence
+    </a>
+  </div>
+</div>
+
+<div class="grid cols-2" style="grid-template-columns:1.6fr 1fr">
+  <div class="card pad">
+    <h3 style="margin-top:0">Case Information</h3>
+    <table class="data" style="margin-top:8px">
+      <tr><td class="muted text-sm" style="width:140px">Status</td><td>{{ badge(case.status) }}</td></tr>
+      <tr><td class="muted text-sm">Priority</td><td>{{ badge(case.priority) }}</td></tr>
+      <tr><td class="muted text-sm">Type</td><td class="text-sm">{{ case.type }}</td></tr>
+      <tr><td class="muted text-sm">Lead</td><td class="text-sm">{{ case.lead }}</td></tr>
+      <tr><td class="muted text-sm">Location</td><td class="text-sm">{{ case.location or '—' }}</td></tr>
+      <tr><td class="muted text-sm">Opened</td><td class="text-sm">{{ case.created.strftime('%B %d, %Y') if case.created else '—' }}</td></tr>
+    </table>
+    {% if case.description %}
+    <div style="margin-top:16px">
+      <div class="muted text-sm" style="margin-bottom:4px">Description</div>
+      <p class="text-sm">{{ case.description }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card pad">
+    <h3 style="margin-top:0">Quick Actions</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+      <a class="btn btn-primary" href="{{ url_for('evidence.upload_evidence') }}?case_id={{ case.case_id }}">Upload Evidence</a>
+      <a class="btn btn-ghost" href="{{ url_for('reports.case_report', case_id=case.case_id) }}">View Case Report</a>
+      <a class="btn btn-ghost" href="{{ url_for('reports.export_pdf', report_type='cases') }}">Export PDF</a>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:18px">
+  <div class="card-head">
+    <h3>Evidence ({{ evidence|length }})</h3>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Evidence ID</th><th>Name</th><th>Type</th><th>Status</th><th>Hash (first 16)</th><th>Collected By</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for e in evidence %}
+        <tr onclick="location.href='{{ url_for('evidence.evidence_details', ev_id=e.evidence_id) }}'" style="cursor:pointer">
+          <td class="mono text-sm">{{ e.evidence_id }}</td>
+          <td class="cell-strong">{{ e.name }}</td>
+          <td class="muted text-sm">{{ e.type }}</td>
+          <td>{{ badge(e.status) }}</td>
+          <td class="mono text-xs faint">{{ e.hash[:16] }}…</td>
+          <td class="muted text-sm">{{ e.collected_by }}</td>
+          <td class="muted text-sm">{{ e.collected_at.strftime('%b %d, %Y') if e.collected_at else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7"><div class="empty">No evidence items linked to this case.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
