@@ -1,15 +1,27 @@
 services:
   - type: web
     name: evidencechain
-    env: python
+    runtime: python
+
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.11
+
       - key: MONGO_URI
-        sync: false        # Set in Render dashboard
-      - key: SECRET_KEY
-        generateValue: true
-      - key: JWT_SECRET_KEY
-        generateValue: true
+        sync: false
+
       - key: MONGO_DBNAME
         value: evidencechain
+
+      - key: SECRET_KEY
+        generateValue: true
+
+      - key: JWT_SECRET_KEY
+        generateValue: true
+
+      - key: SEED_DEMO_DATA
+        value: true
