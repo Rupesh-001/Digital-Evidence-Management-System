@@ -1,0 +1,120 @@
+{% extends "shell.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Operational overview{% endblock %}
+{% set active = 'dashboard' %}
+
+{% macro stat_card(icon_path, color, num, lbl) %}
+<div class="stat">
+  <div class="top">
+    <div>
+      <div class="num">{{ num }}</div>
+      <div class="lbl">{{ lbl }}</div>
+    </div>
+    <div class="ic {{ color }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{{ icon_path|safe }}</svg>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Welcome back, {{ current_user.name.split(' ')[0] }}</h1>
+  <p>Here is what is happening across your active investigations.</p>
+</div>
+
+<div class="grid cols-4">
+  {{ stat_card('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', 'sky',    stats.total_cases,    'Total Cases') }}
+  {{ stat_card('<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/>', 'teal', stats.total_evidence, 'Evidence Items') }}
+  {{ stat_card('<path d="M12 11a2 2 0 0 0-2 2c0 1.6-.2 3.2-.7 4.7"/><path d="M5.3 8.5A7 7 0 0 1 19 13c0 1.4-.1 2.7-.4 4"/><path d="M8 14c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2-.3 4-.8 6"/><path d="M3 11a9 9 0 0 1 4-7.5"/>', 'violet', stats.verified, 'Verified Hashes') }}
+  {{ stat_card('<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', 'amber', stats.in_analysis, 'In Analysis') }}
+</div>
+
+<div class="grid cols-2" style="margin-top:18px;grid-template-columns:1.55fr 1fr">
+  <div class="card">
+    <div class="card-head">
+      <h3>Recent Cases</h3>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('cases.view_cases') }}">View all</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Case ID</th><th>Title</th><th>Priority</th><th>Status</th><th>Lead</th></tr></thead>
+        <tbody>
+          {% for c in recent_cases %}
+          <tr onclick="location.href='{{ url_for('cases.case_details', case_id=c.case_id) }}'" style="cursor:pointer">
+            <td class="mono text-sm">{{ c.case_id }}</td>
+            <td class="cell-strong">{{ c.title }}</td>
+            {% set text = c.priority %}
+            <td>{% include 'partials/badge.html' %}</td>
+            {% set text = c.status %}
+            <td>{% include 'partials/badge.html' %}</td>
+            <td class="muted text-sm">{{ c.lead }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty">No cases yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Custody Activity</h3>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('custody.custody_logs') }}">All logs</a>
+    </div>
+    <div class="card-body">
+      <div class="timeline">
+        {% for c in recent_custody %}
+        <div class="tl-item">
+          <span class="tl-dot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <div class="tl-card">
+            <div class="tl-head">
+              <div class="cell-strong">{{ c.action }} · {{ c.evidence_id }}</div>
+              <span class="faint text-xs nowrap">{{ c.timestamp.strftime('%b %d') if c.timestamp else '—' }}</span>
+            </div>
+            <div class="muted text-sm">{{ c._evidence.get('name', 'Evidence') if c._evidence else c.evidence_id }} — {{ c.from_party }} → {{ c.to_party }}</div>
+            <div class="faint text-xs" style="margin-top:4px">Handled by {{ c.handler }}</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="muted text-sm">No custody records yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:18px">
+  <div class="card-head"><h3>Quick Actions</h3></div>
+  <div class="card-body">
+    <div class="row wrap gap-lg">
+      <a class="btn btn-primary" href="{{ url_for('cases.create_case') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+        New Case
+      </a>
+      <a class="btn btn-ghost" href="{{ url_for('evidence.upload_evidence') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Evidence
+      </a>
+      <a class="btn btn-ghost" href="{{ url_for('evidence.verify_hash') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 11a2 2 0 0 0-2 2c0 1.6-.2 3.2-.7 4.7"/><path d="M8 14c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2-.3 4-.8 6"/></svg>
+        Verify Hash
+      </a>
+      <a class="btn btn-ghost" href="{{ url_for('reports.generate_report') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Generate Report
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="grid cols-3" style="margin-top:18px">
+  <div class="stat"><div class="top"><div><div class="num">{{ stats.open_cases }}</div><div class="lbl">Open Cases</div></div></div></div>
+  <div class="stat"><div class="top"><div><div class="num">{{ stats.total_users }}</div><div class="lbl">Active Users</div></div></div></div>
+  <div class="stat"><div class="top"><div><div class="num">{{ stats.custody_records }}</div><div class="lbl">Custody Records</div></div></div></div>
+</div>
+{% endblock %}

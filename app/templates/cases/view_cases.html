@@ -1,0 +1,70 @@
+{% extends "shell.html" %}
+{% from 'partials/badge.html' import badge %}
+{% block title %}Cases{% endblock %}
+{% block page_title %}Cases{% endblock %}
+{% block page_subtitle %}All investigations{% endblock %}
+{% set active = 'view_cases' %}
+
+{% block content %}
+<div class="page-head row between wrap">
+  <div>
+    <h1>Cases</h1>
+    <p>Browse, filter, and open investigation case files.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('cases.create_case') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+    New Case
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <form method="GET" class="row gap-sm wrap" style="flex:1">
+      <select class="select" name="status" style="width:auto" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for s in ['Open','Under Review','Closed','Archived'] %}
+        <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <select class="select" name="priority" style="width:auto" onchange="this.form.submit()">
+        <option value="">All priorities</option>
+        {% for p in ['Critical','High','Medium','Low'] %}
+        <option value="{{ p }}" {% if priority == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+      <div class="search" style="min-width:200px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input name="q" value="{{ q }}" placeholder="Search cases..." oninput="this.form.submit()" />
+      </div>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Case ID</th><th>Title</th><th>Type</th><th>Priority</th><th>Status</th><th>Lead</th><th>Evidence</th><th>Opened</th></tr>
+      </thead>
+      <tbody>
+        {% for c in cases %}
+        <tr onclick="location.href='{{ url_for('cases.case_details', case_id=c.case_id) }}'" style="cursor:pointer">
+          <td class="mono text-sm">{{ c.case_id }}</td>
+          <td class="cell-strong">{{ c.title }}</td>
+          <td class="muted text-sm">{{ c.type }}</td>
+          <td>{{ badge(c.priority) }}</td>
+          <td>{{ badge(c.status) }}</td>
+          <td class="muted text-sm">{{ c.lead }}</td>
+          <td><span class="badge gray">{{ ev_count.get(c.case_id, 0) }} items</span></td>
+          <td class="muted text-sm">{{ c.created.strftime('%b %d, %Y') if c.created else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">
+          <div class="empty">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+            <div>No cases match your filters.</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "shell.html" %}
+{% from 'partials/badge.html' import badge %}
+{% block title %}Verify Hash{% endblock %}
+{% block page_title %}Verify Hash{% endblock %}
+{% block page_subtitle %}Integrity check{% endblock %}
+{% set active = 'verify_hash' %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Verify Hash</h1>
+  <p>Drop a file to compare its SHA-256 hash against the recorded value.</p>
+</div>
+
+<div class="grid cols-2">
+  <div class="card pad">
+    <h3 style="margin-top:0">File integrity check</h3>
+    <form method="POST" enctype="multipart/form-data" id="verifyForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+      <div class="field">
+        <label for="ev_id">Select evidence item</label>
+        <select class="select" id="ev_id" name="ev_id">
+          <option value="">— Select evidence —</option>
+          {% for e in evidence %}
+          <option value="{{ e.evidence_id }}" {% if result and result.ev and result.ev.evidence_id == e.evidence_id %}selected{% endif %}>{{ e.evidence_id }} — {{ e.name[:40] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Recorded hash</label>
+        <div class="hashbox" id="recorded">
+          {% if result and result.ev %}{{ result.ev.hash }}{% else %}Select an evidence item…{% endif %}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Upload file to verify</label>
+        <div class="drop-zone" id="drop" onclick="document.getElementById('vfile').click()">
+          <div id="dropText">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div>Drop file or <span style="color:var(--accent)">browse</span></div>
+          </div>
+          <input type="file" id="vfile" name="file" style="display:none" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Computed hash (from file)</label>
+        <div class="hashbox" id="computed">Awaiting file…</div>
+      </div>
+
+      <button class="btn btn-primary btn-block" type="submit" id="verifyBtn" disabled>Verify Against Database</button>
+    </form>
+
+    {% if result and not result.get('manual') %}
+    <div class="card pad" style="margin-top:16px;border-color:{{ 'rgba(52,211,153,.4)' if result.match else 'rgba(248,113,113,.4)' }}">
+      <div class="row gap-sm">
+        <span class="badge {{ 'green' if result.match else 'red' }}">
+          <span class="dot"></span>{{ 'MATCH' if result.match else 'MISMATCH' }}
+        </span>
+        <span>{{ 'Integrity confirmed — the file is unaltered.' if result.match else 'Warning: hash mismatch. Evidence may be compromised.' }}</span>
+      </div>
+      {% if result.ev %}
+      <div class="muted text-sm" style="margin-top:8px">Evidence updated to: <strong>{{ 'Verified' if result.match else 'Compromised' }}</strong></div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card pad">
+    <h3 style="margin-top:0">Manual hash comparison</h3>
+    <p class="text-sm muted">Paste two hashes to compare without a file.</p>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="field">
+        <label for="hash_a">Hash A</label>
+        <textarea class="textarea" id="hash_a" name="hash_a" style="min-height:70px" placeholder="Paste hash..."></textarea>
+      </div>
+      <div class="field">
+        <label for="hash_b">Hash B</label>
+        <textarea class="textarea" id="hash_b" name="hash_b" style="min-height:70px" placeholder="Paste hash..."></textarea>
+      </div>
+      <button class="btn btn-ghost btn-block" type="submit">Compare hashes</button>
+    </form>
+
+    {% if result and result.get('manual') %}
+    <div class="card pad" style="margin-top:16px;border-color:{{ 'rgba(52,211,153,.4)' if result.match else 'rgba(248,113,113,.4)' }}">
+      <div class="row gap-sm">
+        <span class="badge {{ 'green' if result.match else 'red' }}">
+          <span class="dot"></span>{{ 'MATCH' if result.match else 'MISMATCH' }}
+        </span>
+        <span>{{ 'The two hashes are identical.' if result.match else 'The hashes differ.' }}</span>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('vfile');
+  const computed = document.getElementById('computed');
+  const verifyBtn = document.getElementById('verifyBtn');
+  const dropText = document.getElementById('dropText');
+
+  ['dragover', 'dragenter'].forEach(ev =>
+    drop.addEventListener(ev, e => {
+      e.preventDefault();
+      drop.classList.add('drag');
+    })
+  );
+
+  ['dragleave', 'drop'].forEach(ev =>
+    drop.addEventListener(ev, e => {
+      e.preventDefault();
+      drop.classList.remove('drag');
+    })
+  );
+
+  // Drag & Drop
+  drop.addEventListener('drop', e => {
+    e.preventDefault();
+
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  // Browse
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  function handleFile(file) {
+    dropText.innerHTML =
+      '<div class="cell-strong">' + file.name + '</div>' +
+      '<div class="text-sm faint">' +
+      (file.size / 1024).toFixed(1) +
+      ' KB</div>';
+
+    computed.textContent =
+      'Hash will be computed during verification.';
+
+    verifyBtn.disabled = false;
+  }
+
+  // Evidence selection
+  document.getElementById('ev_id').addEventListener('change', function () {
+    if (this.value) {
+      document.getElementById('recorded').textContent =
+        'Will be fetched from database…';
+    } else {
+      document.getElementById('recorded').textContent =
+        'Select an evidence item…';
+    }
+  });
+
+  // Prevent empty submissions
+  document.getElementById('verifyForm')
+    .addEventListener('submit', function (e) {
+      if (!document.getElementById('ev_id').value) {
+        e.preventDefault();
+        alert('Please select an evidence item.');
+        return;
+      }
+
+      if (!fileInput.files.length) {
+        e.preventDefault();
+        alert('Please upload a file.');
+      }
+    });
+</script>
+{% endblock %}

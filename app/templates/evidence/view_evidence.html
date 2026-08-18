@@ -1,0 +1,76 @@
+{% extends "shell.html" %}
+{% from 'partials/badge.html' import badge %}
+{% block title %}Evidence{% endblock %}
+{% block page_title %}Evidence{% endblock %}
+{% block page_subtitle %}All evidence items{% endblock %}
+{% set active = 'view_evidence' %}
+
+{% block content %}
+<div class="page-head row between wrap">
+  <div>
+    <h1>Evidence</h1>
+    <p>Browse and manage all catalogued evidence items.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('evidence.upload_evidence') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    Upload Evidence
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <form method="GET" class="row gap-sm wrap" style="flex:1">
+      <select class="select" name="type" style="width:auto" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for t in ['Digital Device','Storage Media','Document','Video','Image','Audio','Physical Item'] %}
+        <option value="{{ t }}" {% if ev_type == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+      <select class="select" name="status" style="width:auto" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for s in ['Secured','In Analysis','Verified','Compromised'] %}
+        <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <select class="select" name="case_id" style="width:auto" onchange="this.form.submit()">
+        <option value="">All cases</option>
+        {% for c in cases %}
+        <option value="{{ c.case_id }}" {% if case_id == c.case_id %}selected{% endif %}>{{ c.case_id }}</option>
+        {% endfor %}
+      </select>
+      <div class="search" style="min-width:200px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input name="q" value="{{ q }}" placeholder="Search evidence..." oninput="this.form.submit()" />
+      </div>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Evidence ID</th><th>Name</th><th>Type</th><th>Case</th><th>Status</th><th>Hash</th><th>Collected By</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for e in items %}
+        <tr onclick="location.href='{{ url_for('evidence.evidence_details', ev_id=e.evidence_id) }}'" style="cursor:pointer">
+          <td class="mono text-sm">{{ e.evidence_id }}</td>
+          <td class="cell-strong">{{ e.name }}</td>
+          <td class="muted text-sm">{{ e.type }}</td>
+          <td class="mono text-xs">{{ e.case_id }}</td>
+          <td>{{ badge(e.status) }}</td>
+          <td class="mono text-xs faint">{{ e.hash[:20] if e.hash else '—' }}…</td>
+          <td class="muted text-sm">{{ e.collected_by }}</td>
+          <td class="muted text-sm">{{ e.collected_at.strftime('%b %d, %Y') if e.collected_at else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">
+          <div class="empty">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+            <div>No evidence items match your filters.</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

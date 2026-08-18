@@ -1,0 +1,15 @@
+{# Badge partial — use with: {% set badge_text = c.status %}{% include 'partials/badge.html' %} #}
+{# Or call the macro directly #}
+{% macro badge(text) %}
+{% set color_map = {
+  'Open': 'sky', 'Under Review': 'amber', 'Closed': 'gray', 'Archived': 'gray',
+  'In Analysis': 'amber', 'Secured': 'teal', 'Verified': 'green', 'Compromised': 'red',
+  'Active': 'green', 'Suspended': 'red', 'Pending': 'amber',
+  'Critical': 'red', 'High': 'amber', 'Medium': 'sky', 'Low': 'gray',
+  'Collected': 'sky', 'Transferred': 'violet', 'Checked Out': 'amber', 'Downloaded': 'teal',
+  'Digital Device': 'violet', 'Storage Media': 'sky', 'Document': 'teal',
+  'Video': 'amber', 'Image': 'green', 'Audio': 'gray', 'Physical Item': 'gray',
+} %}
+{% set color = color_map.get(text, 'gray') %}
+<span class="badge {{ color }}"><span class="dot"></span>{{ text }}</span>
+{% endmacro %}

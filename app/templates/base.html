@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-background">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}EvidenceChain{% endblock %} — EvidenceChain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="toast-wrap" id="toastWrap">
+      {% for category, message in messages %}
+        <div class="toast {{ 'error' if category == 'error' else ('success' if category == 'success' else '') }}">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(function(){
+        var w = document.getElementById('toastWrap');
+        if(w) w.querySelectorAll('.toast').forEach(function(t){ t.remove(); });
+      }, 3500);
+    </script>
+  {% endif %}
+{% endwith %}
+
+{% block body %}{% endblock %}
+
+</body>
+</html>

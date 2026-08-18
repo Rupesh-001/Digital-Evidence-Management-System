@@ -1,0 +1,63 @@
+{% extends "shell.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block page_title %}Audit Logs{% endblock %}
+{% block page_subtitle %}Administration{% endblock %}
+{% set active = 'audit_logs' %}
+
+{% block content %}
+<div class="page-head row between wrap">
+  <div>
+    <h1>Audit Logs</h1>
+    <p>Immutable, system-wide trail of every action recorded in EvidenceChain.</p>
+  </div>
+  <div class="row gap-sm">
+    <a class="btn btn-ghost" href="{{ url_for('reports.export_pdf', report_type='audit') }}">Export PDF</a>
+    <a class="btn btn-ghost" href="{{ url_for('reports.export_excel', report_type='audit') }}">Export Excel</a>
+    <button class="btn btn-ghost" onclick="window.print()">Print</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <form method="GET" class="row gap-sm wrap" style="flex:1">
+      <select class="select" name="action" style="width:auto" onchange="this.form.submit()">
+        <option value="">All actions</option>
+        {% for a in actions %}
+        <option value="{{ a }}" {% if action == a %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+      <div class="search" style="min-width:220px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input name="q" value="{{ q }}" placeholder="Search actor, target, detail..." oninput="this.form.submit()" />
+      </div>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Module</th><th>Target</th><th>Detail</th><th>Source IP</th></tr>
+      </thead>
+      <tbody>
+        {% for a in logs %}
+        <tr>
+          <td class="muted text-sm nowrap">{{ a.timestamp.strftime('%b %d, %Y %H:%M') if a.timestamp else '—' }}</td>
+          <td class="cell-strong text-sm">{{ a.actor }}</td>
+          <td><span class="badge sky"><span class="dot"></span>{{ a.action }}</span></td>
+          <td class="muted text-xs">{{ a.get('module', '—') }}</td>
+          <td class="mono text-sm">{{ a.target }}</td>
+          <td class="muted text-sm">{{ a.detail }}</td>
+          <td class="mono text-xs faint">{{ a.get('ip', '—') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">
+          <div class="empty">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></div>
+            <div>No audit records found.</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

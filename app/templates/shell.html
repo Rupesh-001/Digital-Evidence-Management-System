@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="app">
+
+  {# ── Sidebar ────────────────────────────────────────────────────── #}
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="{{ url_for('dashboard.dashboard') }}">
+      <span class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </span>
+      <span class="name">EvidenceChain<small>Custody Management</small></span>
+    </a>
+
+    <nav>
+      <div class="nav-group">
+        <div class="label">Overview</div>
+        <a class="nav-link {% if active == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Dashboard</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="label">Cases</div>
+        <a class="nav-link {% if active == 'view_cases' %}active{% endif %}" href="{{ url_for('cases.view_cases') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>View Cases</span>
+        </a>
+        <a class="nav-link {% if active == 'create_case' %}active{% endif %}" href="{{ url_for('cases.create_case') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          <span>Create Case</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="label">Evidence</div>
+        <a class="nav-link {% if active == 'view_evidence' %}active{% endif %}" href="{{ url_for('evidence.view_evidence') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+          <span>View Evidence</span>
+        </a>
+        <a class="nav-link {% if active == 'upload_evidence' %}active{% endif %}" href="{{ url_for('evidence.upload_evidence') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Upload Evidence</span>
+        </a>
+        <a class="nav-link {% if active == 'verify_hash' %}active{% endif %}" href="{{ url_for('evidence.verify_hash') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11a2 2 0 0 0-2 2c0 1.6-.2 3.2-.7 4.7"/><path d="M5.3 8.5A7 7 0 0 1 19 13c0 1.4-.1 2.7-.4 4"/><path d="M8 14c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2-.3 4-.8 6"/><path d="M3 11a9 9 0 0 1 4-7.5"/></svg>
+          <span>Verify Hash</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="label">Chain of Custody</div>
+        <a class="nav-link {% if active == 'custody_logs' %}active{% endif %}" href="{{ url_for('custody.custody_logs') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+          <span>Custody Logs</span>
+        </a>
+        <a class="nav-link {% if active == 'custody_report' %}active{% endif %}" href="{{ url_for('reports.custody_report') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          <span>Custody Report</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="label">Reports</div>
+        <a class="nav-link {% if active == 'generate_report' %}active{% endif %}" href="{{ url_for('reports.generate_report') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>Generate Report</span>
+        </a>
+        <a class="nav-link {% if active == 'evidence_report' %}active{% endif %}" href="{{ url_for('reports.generate_report') }}#evidence">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>Evidence Report</span>
+        </a>
+        <a class="nav-link {% if active == 'case_report' %}active{% endif %}" href="{{ url_for('reports.generate_report') }}#cases">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>Case Report</span>
+        </a>
+      </div>
+
+      {% if current_user.is_admin %}
+      <div class="nav-group">
+        <div class="label">Administration</div>
+        <a class="nav-link {% if active == 'users' %}active{% endif %}" href="{{ url_for('admin.users') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+          <span>Manage Users</span>
+        </a>
+        <a class="nav-link {% if active == 'audit_logs' %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+          <span>Audit Logs</span>
+        </a>
+      </div>
+      {% endif %}
+    </nav>
+  </aside>
+
+  {# ── Main ──────────────────────────────────────────────────────── #}
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="page-meta">
+        <span class="page-title">{% block page_title %}{% endblock %}</span>
+        <span class="page-sub muted">{% block page_subtitle %}{% endblock %}</span>
+      </div>
+      <div class="topbar-right">
+        <div class="avatar" title="{{ current_user.name }}">
+          {{ current_user.name[:2].upper() }}
+        </div>
+        <div class="user-info">
+          <div class="cell-strong">{{ current_user.name }}</div>
+          <div class="muted text-xs">{{ current_user.role }}</div>
+        </div>
+        <a class="icon-btn" href="{{ url_for('auth.logout') }}" title="Sign out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <div class="content" id="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

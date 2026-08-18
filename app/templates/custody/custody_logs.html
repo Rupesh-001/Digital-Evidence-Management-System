@@ -1,0 +1,66 @@
+{% extends "shell.html" %}
+{% from 'partials/badge.html' import badge %}
+{% block title %}Custody Logs{% endblock %}
+{% block page_title %}Custody Logs{% endblock %}
+{% block page_subtitle %}Chain of custody{% endblock %}
+{% set active = 'custody_logs' %}
+
+{% block content %}
+<div class="page-head row between wrap">
+  <div>
+    <h1>Custody Logs</h1>
+    <p>Every recorded transfer, check-out, and verification across all evidence.</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('reports.custody_report') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Custody Report
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <form method="GET" class="row gap-sm wrap" style="flex:1">
+      <select class="select" name="action" style="width:auto" onchange="this.form.submit()">
+        <option value="">All actions</option>
+        {% for a in ['Collected','Transferred','Checked Out','Verified','Downloaded'] %}
+        <option value="{{ a }}" {% if action == a %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+      <div class="search" style="min-width:220px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input name="q" value="{{ q }}" placeholder="Search by evidence ID, handler..." oninput="this.form.submit()" />
+      </div>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Timestamp</th><th>Evidence</th><th>Action</th><th>From → To</th><th>Handler</th><th>Reason</th><th>Integrity</th></tr>
+      </thead>
+      <tbody>
+        {% for l in logs %}
+        <tr>
+          <td class="muted text-sm nowrap">{{ l.timestamp.strftime('%b %d, %Y %H:%M') if l.timestamp else '—' }}</td>
+          <td class="mono text-sm">
+            <a style="color:var(--accent)" href="{{ url_for('evidence.evidence_details', ev_id=l.evidence_id) }}">{{ l.evidence_id }}</a>
+            {% if l._evidence %}<div class="faint text-xs">{{ l._evidence.get('name','')[:35] }}</div>{% endif %}
+          </td>
+          <td><span class="badge sky"><span class="dot"></span>{{ l.action }}</span></td>
+          <td class="text-sm">{{ l.from_party }} <span class="faint">→</span> {{ l.to_party }}</td>
+          <td class="text-sm">{{ l.handler }}</td>
+          <td class="muted text-sm">{{ l.reason or '—' }}</td>
+          <td>{{ badge(l.integrity or 'Verified') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">
+          <div class="empty">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7"/></svg></div>
+            <div>No custody records found.</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
