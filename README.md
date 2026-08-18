@@ -198,7 +198,7 @@ The system allows investigators to verify whether any evidence has been modified
 
 - Rupesh Varma
 - Manish Kushwaha
-- Team Member 3
+- Deepak Goud
 
 ---
 
