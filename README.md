@@ -197,7 +197,7 @@ The system allows investigators to verify whether any evidence has been modified
 ## 👨‍💻 Team Members
 
 - Rupesh Varma
-- Team Member 2
+- Manish Kushwaha
 - Team Member 3
 
 ---
