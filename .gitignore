@@ -4,7 +4,6 @@ __pycache__/
 .env
 .env.example
 uploads/
-reports/
 *.egg-info/
 dist/
 .venv/

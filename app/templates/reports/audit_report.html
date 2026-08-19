@@ -1,0 +1,323 @@
+{% extends "shell.html" %}
+
+{% from 'partials/badge.html' import badge %}
+
+{% block title %}
+System Audit Report
+{% endblock %}
+
+{% block page_title %}
+System Audit Report
+{% endblock %}
+
+{% block page_subtitle %}
+EvidenceChain audit trail
+{% endblock %}
+
+{% set active = 'audit_logs' %}
+
+
+{% block content %}
+
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<div class="page-head row between wrap no-print">
+
+    <div>
+
+        <a
+            class="btn btn-ghost btn-sm"
+            href="{{ url_for(
+                'reports.generate_report'
+            ) }}"
+            style="margin-bottom:14px;"
+        >
+            ← Reporting Center
+        </a>
+
+        <h1>
+            System Audit Report
+        </h1>
+
+        <p class="muted">
+
+            System activity recorded by
+            EvidenceChain.
+
+        </p>
+
+    </div>
+
+
+    <div class="row gap-sm">
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_pdf',
+                report_type='audit'
+            ) }}"
+        >
+            PDF
+        </a>
+
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_excel',
+                report_type='audit'
+            ) }}"
+        >
+            Excel
+        </a>
+
+
+        <button
+            type="button"
+            class="btn btn-ghost"
+            onclick="window.print()"
+        >
+            Print
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AUTOMATIC SUMMARY -->
+<!-- ========================================================= -->
+
+<div class="card pad">
+
+    <h3 style="margin-top:0;">
+        1. Automatically Generated Audit Summary
+    </h3>
+
+    <p>
+
+        {{ summary }}
+
+    </p>
+
+    <p class="muted text-sm">
+
+        This summary is generated automatically
+        from the recorded audit events.
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AUDIT EVENTS -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    style="margin-top:18px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                2. Audit Events
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+
+                {{ audits|length }}
+                recorded event(s)
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+        <table class="data">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Timestamp
+                    </th>
+
+                    <th>
+                        Actor
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                    <th>
+                        Module
+                    </th>
+
+                    <th>
+                        Target
+                    </th>
+
+                    <th>
+                        Details
+                    </th>
+
+                    <th>
+                        IP Address
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for a in audits %}
+
+                <tr>
+
+                    <td class="muted text-sm">
+
+                        {% if a.timestamp %}
+
+                            {{ a.timestamp.strftime(
+                                '%b %d, %Y %H:%M'
+                            ) }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="cell-strong">
+                        {{ a.actor or '—' }}
+                    </td>
+
+
+                    <td>
+
+                        <span class="badge sky">
+
+                            <span class="dot"></span>
+
+                            {{ a.action or 'Unknown' }}
+
+                        </span>
+
+                    </td>
+
+
+                    <td class="muted text-sm">
+
+                        {{ a.get(
+                            'module',
+                            '—'
+                        ) }}
+
+                    </td>
+
+
+                    <td class="mono text-xs">
+
+                        {{ a.target or '—' }}
+
+                    </td>
+
+
+                    <td class="muted text-sm">
+
+                        {{ a.detail or '—' }}
+
+                    </td>
+
+
+                    <td class="mono text-xs">
+
+                        {{ a.get(
+                            'ip',
+                            '—'
+                        ) }}
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="7">
+
+                        <div class="empty">
+
+                            No audit records are
+                            currently available.
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CONCLUSION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        3. Audit Conclusion
+    </h3>
+
+    <p>
+
+        This report contains only the
+        EvidenceChain system audit trail.
+
+        The audit records are presented as
+        recorded and are not modified during
+        report generation.
+
+    </p>
+
+</div>
+
+
+{% endblock %}

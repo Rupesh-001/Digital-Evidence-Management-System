@@ -1,0 +1,734 @@
+{% extends "shell.html" %}
+
+{% from 'partials/badge.html' import badge %}
+
+{% block title %}
+Evidence Report — {{ ev.evidence_id }}
+{% endblock %}
+
+{% block page_title %}
+Evidence Report
+{% endblock %}
+
+{% block page_subtitle %}
+{{ ev.evidence_id }}
+{% endblock %}
+
+{% set active = 'evidence_report' %}
+
+
+{% block content %}
+
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<div class="page-head row between wrap no-print">
+
+    <div>
+
+        <a
+            class="btn btn-ghost btn-sm"
+            href="{{ url_for(
+                'reports.generate_report'
+            ) }}"
+            style="margin-bottom:14px;"
+        >
+            ← Reporting Center
+        </a>
+
+        <h1>
+            Evidence Report
+        </h1>
+
+        <p class="muted">
+
+            Topic-specific forensic report for
+
+            <span class="mono">
+                {{ ev.evidence_id }}
+            </span>
+
+        </p>
+
+    </div>
+
+
+    <div class="row gap-sm">
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_pdf',
+                report_type='evidence',
+                ev_id=ev.evidence_id
+            ) }}"
+        >
+            PDF
+        </a>
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_excel',
+                report_type='evidence',
+                ev_id=ev.evidence_id
+            ) }}"
+        >
+            Excel
+        </a>
+
+        <button
+            type="button"
+            class="btn btn-ghost"
+            onclick="window.print()"
+        >
+            Print
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- EVIDENCE HEADER -->
+<!-- ========================================================= -->
+
+<div class="card pad">
+
+    <div class="row between wrap">
+
+        <div>
+
+            <div class="muted text-sm">
+                EVIDENCE IDENTIFICATION
+            </div>
+
+            <h2 style="margin:5px 0;">
+                {{ ev.name }}
+            </h2>
+
+            <div class="mono text-sm">
+                {{ ev.evidence_id }}
+            </div>
+
+        </div>
+
+
+        <div>
+            {{ badge(ev.status) }}
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- IDENTIFICATION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        1. Evidence Identification
+    </h3>
+
+
+    <table class="data">
+
+        <tbody>
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Evidence ID
+                </td>
+
+                <td class="mono">
+                    {{ ev.evidence_id }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Evidence Name
+                </td>
+
+                <td>
+                    {{ ev.name }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Evidence Type
+                </td>
+
+                <td>
+                    {{ ev.type or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Status
+                </td>
+
+                <td>
+                    {{ badge(ev.status) }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Linked Case
+                </td>
+
+                <td class="mono">
+
+                    {{ ev.case_id or '—' }}
+
+                    {% if case %}
+                        — {{ case.title }}
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AUTOMATIC DESCRIPTION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        2. Automatically Generated Evidence Description
+    </h3>
+
+    <p>
+
+        {{ generated_description }}
+
+    </p>
+
+    <p class="muted text-sm">
+
+        This description is generated automatically
+        from the evidence information stored in the
+        Evidence Management System.
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- FILE INFORMATION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        3. File and Collection Information
+    </h3>
+
+
+    <table class="data">
+
+        <tbody>
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Original Filename
+                </td>
+
+                <td>
+                    {{ ev.filename or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    File Size
+                </td>
+
+                <td>
+                    {{ ev.file_size or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Collection Location
+                </td>
+
+                <td>
+                    {{ ev.location or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Collected By
+                </td>
+
+                <td>
+                    {{ ev.collected_by or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Collection Date
+                </td>
+
+                <td>
+
+                    {% if ev.collected_at %}
+
+                        {{ ev.collected_at.strftime(
+                            '%B %d, %Y %H:%M'
+                        ) }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Integrity Verification
+                </td>
+
+                <td>
+
+                    {% if ev.integrity_verified_at %}
+
+                        {{ ev.integrity_verified_at.strftime(
+                            '%B %d, %Y %H:%M'
+                        ) }}
+
+                    {% else %}
+
+                        Not recorded
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- SHA256 -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        4. SHA-256 Integrity Verification
+    </h3>
+
+
+    <div
+        style="
+            margin-top:12px;
+            padding:14px;
+            border-radius:8px;
+            background:#f5f7fa;
+            border:1px solid #e1e5ea;
+            word-break:break-all;
+        "
+    >
+
+        <span class="mono text-sm">
+
+            {{ ev.hash or
+               'SHA-256 hash not available' }}
+
+        </span>
+
+    </div>
+
+
+    <div
+        class="row gap-sm"
+        style="margin-top:12px;"
+    >
+
+        <span class="muted text-sm">
+            Verification Status:
+        </span>
+
+
+        {% if ev.status == 'Verified' %}
+
+            {{ badge('Verified') }}
+
+        {% elif ev.status == 'Compromised' %}
+
+            {{ badge('Compromised') }}
+
+        {% else %}
+
+            {{ badge('Pending') }}
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- NOTES -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        5. Collection Notes
+    </h3>
+
+    <p>
+
+        {{ ev.notes or
+           'No collection notes were recorded.' }}
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CUSTODY -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    style="margin-top:18px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                6. Chain of Custody
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+
+                {{ custody|length }}
+                custody event(s)
+
+            </p>
+
+        </div>
+
+
+        <a
+            class="btn btn-ghost btn-sm"
+            href="{{ url_for(
+                'reports.custody_report',
+                ev_id=ev.evidence_id
+            ) }}"
+        >
+            Full Custody Report
+        </a>
+
+    </div>
+
+
+    <div class="pad">
+
+        <h4 style="margin-top:0;">
+            Automatically Generated Custody Summary
+        </h4>
+
+        <p class="text-sm">
+
+            {{ custody_summary }}
+
+        </p>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+        <table class="data">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Timestamp
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                    <th>
+                        From → To
+                    </th>
+
+                    <th>
+                        Handler
+                    </th>
+
+                    <th>
+                        Reason
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Integrity
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for c in custody %}
+
+                <tr>
+
+                    <td class="muted text-sm">
+
+                        {% if c.timestamp %}
+
+                            {{ c.timestamp.strftime(
+                                '%b %d, %Y %H:%M'
+                            ) }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="badge sky">
+
+                            <span class="dot"></span>
+
+                            {{ c.action or '—' }}
+
+                        </span>
+
+                    </td>
+
+
+                    <td class="text-sm">
+
+                        {{ c.from_party or '—' }}
+
+                        →
+
+                        {{ c.to_party or '—' }}
+
+                    </td>
+
+
+                    <td>
+                        {{ c.handler or '—' }}
+                    </td>
+
+
+                    <td class="muted text-sm">
+                        {{ c.reason or '—' }}
+                    </td>
+
+
+                    <td class="muted text-sm">
+                        {{ c.location or '—' }}
+                    </td>
+
+
+                    <td>
+
+                        {{ badge(
+                            c.integrity or 'Verified'
+                        ) }}
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="7">
+
+                        <div class="empty">
+
+                            No custody records are
+                            currently recorded for
+                            this evidence.
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- SUMMARY -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        7. Forensic Summary
+    </h3>
+
+    <p>
+
+        This report is restricted to evidence
+
+        <strong>
+            {{ ev.evidence_id }}
+        </strong>.
+
+        It contains only the selected evidence
+        record, its file information, integrity
+        information, collection details and
+        associated custody history.
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- DOWNLOAD -->
+<!-- ========================================================= -->
+
+<div
+    class="row gap-sm no-print"
+    style="margin-top:18px;"
+>
+
+    <a
+        class="btn btn-primary"
+        href="{{ url_for(
+            'reports.export_pdf',
+            report_type='evidence',
+            ev_id=ev.evidence_id
+        ) }}"
+    >
+        Download PDF
+    </a>
+
+
+    <a
+        class="btn btn-ghost"
+        href="{{ url_for(
+            'reports.export_excel',
+            report_type='evidence',
+            ev_id=ev.evidence_id
+        ) }}"
+    >
+        Download Excel
+    </a>
+
+</div>
+
+
+{% endblock %}

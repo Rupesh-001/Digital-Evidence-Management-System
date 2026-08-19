@@ -1,0 +1,527 @@
+{% extends "shell.html" %}
+
+{% from 'partials/badge.html' import badge %}
+
+{% block title %}
+Chain of Custody Report
+{% endblock %}
+
+{% block page_title %}
+Chain of Custody Report
+{% endblock %}
+
+{% block page_subtitle %}
+Evidence-specific custody history
+{% endblock %}
+
+{% set active = 'custody_report' %}
+
+
+{% block content %}
+
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<div class="page-head row between wrap no-print">
+
+    <div>
+
+        <a
+            class="btn btn-ghost btn-sm"
+            href="{{ url_for(
+                'reports.generate_report'
+            ) }}"
+            style="margin-bottom:14px;"
+        >
+            ← Reporting Center
+        </a>
+
+        <h1>
+            Chain of Custody Report
+        </h1>
+
+        {% if ev %}
+
+        <p class="muted">
+
+            Evidence:
+
+            <span class="mono">
+                {{ ev.evidence_id }}
+            </span>
+
+            —
+            {{ ev.name }}
+
+        </p>
+
+        {% else %}
+
+        <p class="muted">
+            Select an evidence item to generate
+            its custody report.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    {% if ev %}
+
+    <div class="row gap-sm">
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_pdf',
+                report_type='custody',
+                ev_id=ev.evidence_id
+            ) }}"
+        >
+            PDF
+        </a>
+
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_excel',
+                report_type='custody',
+                ev_id=ev.evidence_id
+            ) }}"
+        >
+            Excel
+        </a>
+
+
+        <button
+            type="button"
+            class="btn btn-ghost"
+            onclick="window.print()"
+        >
+            Print
+        </button>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- EVIDENCE SELECTION -->
+<!-- ========================================================= -->
+
+<div class="card pad">
+
+    <h3 style="margin-top:0;">
+        Select Evidence
+    </h3>
+
+    <p class="muted text-sm">
+
+        Select an evidence item below to view
+        its complete chain-of-custody history.
+
+    </p>
+
+
+    <div
+        class="grid cols-3"
+        style="margin-top:18px;"
+    >
+
+        {% for e in evidence %}
+
+        <div class="card pad">
+
+            <div class="muted text-sm">
+                EVIDENCE
+            </div>
+
+            <h3 style="margin:5px 0;">
+                {{ e.name }}
+            </h3>
+
+            <div class="mono text-sm">
+
+                {{ e.evidence_id }}
+
+            </div>
+
+            <p class="muted text-sm">
+
+                {{ e.type or 'Unknown type' }}
+
+            </p>
+
+
+            <a
+                class="btn btn-primary"
+                href="{{ url_for(
+                    'reports.custody_report',
+                    ev_id=e.evidence_id
+                ) }}"
+            >
+                View Custody
+            </a>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+
+            No evidence is currently available.
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+{% if ev %}
+
+
+<!-- ========================================================= -->
+<!-- EVIDENCE INFORMATION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        1. Evidence Reference
+    </h3>
+
+
+    <table class="data">
+
+        <tbody>
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Evidence ID
+                </td>
+
+                <td class="mono">
+                    {{ ev.evidence_id }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Evidence Name
+                </td>
+
+                <td>
+                    {{ ev.name }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Evidence Type
+                </td>
+
+                <td>
+                    {{ ev.type or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Status
+                </td>
+
+                <td>
+                    {{ badge(ev.status) }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Linked Case
+                </td>
+
+                <td class="mono">
+                    {{ ev.case_id or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    SHA-256
+                </td>
+
+                <td
+                    class="mono"
+                    style="word-break:break-all;"
+                >
+                    {{ ev.hash or '—' }}
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AUTOMATIC SUMMARY -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        2. Automatically Generated Custody Summary
+    </h3>
+
+    <p>
+
+        {{ summary }}
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CUSTODY TIMELINE -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    style="margin-top:18px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                3. Custody Timeline
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+
+                {{ logs|length }}
+                custody event(s)
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+        <table class="data">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Timestamp
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                    <th>
+                        From → To
+                    </th>
+
+                    <th>
+                        Handler
+                    </th>
+
+                    <th>
+                        Reason
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Integrity
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for l in logs %}
+
+                <tr>
+
+                    <td class="muted text-sm">
+
+                        {% if l.timestamp %}
+
+                            {{ l.timestamp.strftime(
+                                '%b %d, %Y %H:%M'
+                            ) }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="badge sky">
+
+                            <span class="dot"></span>
+
+                            {{ l.action or '—' }}
+
+                        </span>
+
+                    </td>
+
+
+                    <td class="text-sm">
+
+                        {{ l.from_party or '—' }}
+
+                        →
+
+                        {{ l.to_party or '—' }}
+
+                    </td>
+
+
+                    <td>
+                        {{ l.handler or '—' }}
+                    </td>
+
+
+                    <td class="muted text-sm">
+                        {{ l.reason or '—' }}
+                    </td>
+
+
+                    <td class="muted text-sm">
+                        {{ l.location or '—' }}
+                    </td>
+
+
+                    <td>
+
+                        {{ badge(
+                            l.integrity or 'Verified'
+                        ) }}
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="7">
+
+                        <div class="empty">
+
+                            No custody records found
+                            for this evidence.
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CONCLUSION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        4. Custody Conclusion
+    </h3>
+
+    <p>
+
+        This report contains only the chain of
+        custody associated with evidence
+
+        <strong>
+            {{ ev.evidence_id }}
+        </strong>.
+
+        Custody records belonging to other
+        evidence items are excluded.
+
+    </p>
+
+</div>
+
+
+{% endif %}
+
+
+{% endblock %}

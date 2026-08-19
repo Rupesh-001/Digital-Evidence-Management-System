@@ -1,0 +1,581 @@
+{% extends "shell.html" %}
+
+{% from 'partials/badge.html' import badge %}
+
+{% block title %}
+Case Report — {{ case.case_id }}
+{% endblock %}
+
+{% block page_title %}
+Case Report
+{% endblock %}
+
+{% block page_subtitle %}
+{{ case.case_id }}
+{% endblock %}
+
+{% set active = 'case_report' %}
+
+
+{% block content %}
+
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<div class="page-head row between wrap no-print">
+
+    <div>
+
+        <a
+            class="btn btn-ghost btn-sm"
+            href="{{ url_for(
+                'reports.generate_report'
+            ) }}"
+            style="margin-bottom:14px;"
+        >
+            ← Reporting Center
+        </a>
+
+        <h1>
+            Case Report
+        </h1>
+
+        <p class="muted">
+
+            Topic-specific report for
+
+            <span class="mono">
+                {{ case.case_id }}
+            </span>
+
+        </p>
+
+    </div>
+
+
+    <div class="row gap-sm">
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_pdf',
+                report_type='cases',
+                case_id=case.case_id
+            ) }}"
+        >
+            PDF
+        </a>
+
+        <a
+            class="btn btn-ghost"
+            href="{{ url_for(
+                'reports.export_excel',
+                report_type='cases',
+                case_id=case.case_id
+            ) }}"
+        >
+            Excel
+        </a>
+
+        <button
+            type="button"
+            class="btn btn-ghost"
+            onclick="window.print()"
+        >
+            Print
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CASE HEADER -->
+<!-- ========================================================= -->
+
+<div class="card pad">
+
+    <div class="row between wrap">
+
+        <div>
+
+            <div class="muted text-sm">
+                CASE IDENTIFICATION
+            </div>
+
+            <h2 style="margin:5px 0;">
+                {{ case.title }}
+            </h2>
+
+            <div class="mono text-sm">
+                {{ case.case_id }}
+            </div>
+
+        </div>
+
+
+        <div>
+
+            {{ badge(case.status) }}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CASE INFORMATION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        1. Case Information
+    </h3>
+
+
+    <table class="data">
+
+        <tbody>
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Case ID
+                </td>
+
+                <td class="mono">
+                    {{ case.case_id }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Case Title
+                </td>
+
+                <td>
+                    {{ case.title }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Case Type
+                </td>
+
+                <td>
+                    {{ case.type or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Status
+                </td>
+
+                <td>
+                    {{ badge(case.status) }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Priority
+                </td>
+
+                <td>
+                    {{ badge(case.priority) }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Lead Investigator
+                </td>
+
+                <td>
+                    {{ case.lead or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Location
+                </td>
+
+                <td>
+                    {{ case.location or '—' }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="muted text-sm">
+                    Created
+                </td>
+
+                <td>
+
+                    {% if case.created %}
+
+                        {{ case.created.strftime(
+                            '%B %d, %Y %H:%M'
+                        ) }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AUTOMATIC DESCRIPTION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        2. Automatically Generated Case Description
+    </h3>
+
+    <p>
+
+        {{ generated_description }}
+
+    </p>
+
+    <p class="muted text-sm">
+
+        This description is generated automatically
+        from the information recorded for this case.
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- RECORDED DESCRIPTION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        3. Recorded Case Description
+    </h3>
+
+    <p>
+
+        {{ case.description or
+           'No case description was recorded.' }}
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- LINKED EVIDENCE -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    style="margin-top:18px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                4. Evidence Associated With This Case
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+
+                {{ evidence|length }}
+                evidence item(s)
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+        <table class="data">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Evidence ID
+                    </th>
+
+                    <th>
+                        Name
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        SHA-256
+                    </th>
+
+                    <th>
+                        Collected By
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for e in evidence %}
+
+                <tr>
+
+                    <td class="mono text-sm">
+                        {{ e.evidence_id }}
+                    </td>
+
+
+                    <td class="cell-strong">
+                        {{ e.name }}
+                    </td>
+
+
+                    <td>
+                        {{ e.type or '—' }}
+                    </td>
+
+
+                    <td>
+                        {{ badge(e.status) }}
+                    </td>
+
+
+                    <td
+                        class="mono text-xs"
+                        style="
+                            max-width:180px;
+                            word-break:break-all;
+                        "
+                    >
+
+                        {% if e.hash %}
+
+                            {{ e.hash[:24] }}…
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ e.collected_by or '—' }}
+                    </td>
+
+
+                    <td>
+
+                        {% if e.collected_at %}
+
+                            {{ e.collected_at.strftime(
+                                '%b %d, %Y'
+                            ) }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <a
+                            class="btn btn-ghost btn-sm"
+                            href="{{ url_for(
+                                'evidence.evidence_details',
+                                ev_id=e.evidence_id
+                            ) }}"
+                        >
+                            View
+                        </a>
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="8">
+
+                        <div class="empty">
+
+                            No evidence is currently
+                            linked to this case.
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CONCLUSION -->
+<!-- ========================================================= -->
+
+<div
+    class="card pad"
+    style="margin-top:18px;"
+>
+
+    <h3 style="margin-top:0;">
+        5. Case Conclusion
+    </h3>
+
+    <p>
+
+        This report is restricted to case
+
+        <strong>
+            {{ case.case_id }}
+        </strong>
+
+        and the evidence directly associated
+        with that case.
+
+        No unrelated cases or evidence records
+        are included in this report.
+
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- DOWNLOAD ACTIONS -->
+<!-- ========================================================= -->
+
+<div
+    class="row gap-sm no-print"
+    style="margin-top:18px;"
+>
+
+    <a
+        class="btn btn-primary"
+        href="{{ url_for(
+            'reports.export_pdf',
+            report_type='cases',
+            case_id=case.case_id
+        ) }}"
+    >
+        Download PDF
+    </a>
+
+
+    <a
+        class="btn btn-ghost"
+        href="{{ url_for(
+            'reports.export_excel',
+            report_type='cases',
+            case_id=case.case_id
+        ) }}"
+    >
+        Download Excel
+    </a>
+
+</div>
+
+
+{% endblock %}

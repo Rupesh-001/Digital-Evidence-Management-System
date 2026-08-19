@@ -1,0 +1,557 @@
+{% extends "shell.html" %}
+
+{% block title %}Reporting Center{% endblock %}
+
+{% block page_title %}Reporting Center{% endblock %}
+
+{% block page_subtitle %}
+Generate topic-specific forensic reports
+{% endblock %}
+
+{% set active = 'generate_report' %}
+
+
+{% block content %}
+
+<div class="page-head">
+
+    <h1>Reporting Center</h1>
+
+    <p class="muted">
+        Generate focused forensic reports for cases,
+        evidence, chain of custody and audit activity.
+    </p>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- REPORT TYPE CARDS -->
+<!-- ========================================================= -->
+
+<div class="grid cols-3">
+
+    <!-- CASE REPORT -->
+
+    <div class="card pad">
+
+        <div class="icon-box">
+            📁
+        </div>
+
+        <h3 style="margin-top:14px;">
+            Case Report
+        </h3>
+
+        <p class="muted text-sm">
+
+            Generate a report for a specific case.
+            The report contains only information
+            related to that case.
+
+        </p>
+
+        <a
+            class="btn btn-primary"
+            href="#case-selector"
+            style="margin-top:12px;"
+        >
+            Select Case
+        </a>
+
+    </div>
+
+
+    <!-- EVIDENCE REPORT -->
+
+    <div class="card pad">
+
+        <div class="icon-box">
+            🔐
+        </div>
+
+        <h3 style="margin-top:14px;">
+            Evidence Report
+        </h3>
+
+        <p class="muted text-sm">
+
+            Generate a focused report for a single
+            evidence item including metadata,
+            integrity information and custody.
+
+        </p>
+
+        <a
+            class="btn btn-primary"
+            href="#evidence-selector"
+            style="margin-top:12px;"
+        >
+            Select Evidence
+        </a>
+
+    </div>
+
+
+    <!-- CUSTODY REPORT -->
+
+    <div class="card pad">
+
+        <div class="icon-box">
+            🔗
+        </div>
+
+        <h3 style="margin-top:14px;">
+            Chain of Custody
+        </h3>
+
+        <p class="muted text-sm">
+
+            Generate a report containing only the
+            custody history of selected evidence.
+
+        </p>
+
+        <a
+            class="btn btn-primary"
+            href="#custody-selector"
+            style="margin-top:12px;"
+        >
+            Select Evidence
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CASE REPORTS -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    id="case-selector"
+    style="margin-top:20px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                Case Reports
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+                Select a case to generate its report.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+        <table class="data">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Case ID
+                    </th>
+
+                    <th>
+                        Title
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for c in cases %}
+
+                <tr>
+
+                    <td class="mono text-sm">
+                        {{ c.case_id }}
+                    </td>
+
+                    <td class="cell-strong">
+                        {{ c.title }}
+                    </td>
+
+                    <td>
+                        {{ c.status or '—' }}
+                    </td>
+
+                    <td>
+
+                        <a
+                            class="btn btn-primary btn-sm"
+                            href="{{ url_for(
+                                'reports.case_report',
+                                case_id=c.case_id
+                            ) }}"
+                        >
+                            Generate Report
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="4">
+
+                        <div class="empty">
+                            No cases are available.
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- EVIDENCE REPORTS -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    id="evidence-selector"
+    style="margin-top:20px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                Evidence Reports
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+                Select an evidence item to generate
+                its focused forensic report.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+        <table class="data">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Evidence ID
+                    </th>
+
+                    <th>
+                        Name
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for e in evidence %}
+
+                <tr>
+
+                    <td class="mono text-sm">
+                        {{ e.evidence_id }}
+                    </td>
+
+                    <td class="cell-strong">
+                        {{ e.name }}
+                    </td>
+
+                    <td>
+                        {{ e.type or '—' }}
+                    </td>
+
+                    <td>
+                        {{ e.status or '—' }}
+                    </td>
+
+                    <td>
+
+                        <a
+                            class="btn btn-primary btn-sm"
+                            href="{{ url_for(
+                                'reports.evidence_report',
+                                ev_id=e.evidence_id
+                            ) }}"
+                        >
+                            Generate Report
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="5">
+
+                        <div class="empty">
+                            No evidence is available.
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- CUSTODY REPORTS -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    id="custody-selector"
+    style="margin-top:20px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                Chain of Custody Reports
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+                Generate the custody history for
+                individual evidence.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+        <table class="data">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Evidence ID
+                    </th>
+
+                    <th>
+                        Evidence
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for e in evidence %}
+
+                <tr>
+
+                    <td class="mono text-sm">
+                        {{ e.evidence_id }}
+                    </td>
+
+                    <td class="cell-strong">
+                        {{ e.name }}
+                    </td>
+
+                    <td>
+                        {{ e.type or '—' }}
+                    </td>
+
+                    <td>
+
+                        <a
+                            class="btn btn-primary btn-sm"
+                            href="{{ url_for(
+                                'reports.custody_report',
+                                ev_id=e.evidence_id
+                            ) }}"
+                        >
+                            Generate Report
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="4">
+
+                        <div class="empty">
+                            No evidence is available.
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AUDIT REPORT -->
+<!-- ========================================================= -->
+
+<div
+    class="card"
+    style="margin-top:20px;"
+>
+
+    <div class="card-head">
+
+        <div>
+
+            <h3 style="margin:0;">
+                System Audit Report
+            </h3>
+
+            <p
+                class="muted text-sm"
+                style="margin:5px 0 0;"
+            >
+                Generate a report containing only
+                system audit activity.
+            </p>
+
+        </div>
+
+
+        <div class="row gap-sm">
+
+            <a
+                class="btn btn-ghost btn-sm"
+                href="{{ url_for(
+                    'reports.audit_report'
+                ) }}"
+            >
+                View Report
+            </a>
+
+            <a
+                class="btn btn-ghost btn-sm"
+                href="{{ url_for(
+                    'reports.export_pdf',
+                    report_type='audit'
+                ) }}"
+            >
+                PDF
+            </a>
+
+            <a
+                class="btn btn-ghost btn-sm"
+                href="{{ url_for(
+                    'reports.export_excel',
+                    report_type='audit'
+                ) }}"
+            >
+                Excel
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
